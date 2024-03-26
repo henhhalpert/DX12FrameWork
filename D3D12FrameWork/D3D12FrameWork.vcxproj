@@ -92,11 +92,13 @@
     <ClCompile Include="Debug\DXDebugLayer.cpp" />
     <ClCompile Include="D3D\DXContext.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Support\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug\DXDebugLayer.h" />
     <ClInclude Include="D3D\DXContext.h" />
     <ClInclude Include="Support\ComPointer.h" />
+    <ClInclude Include="Support\Window.h" />
     <ClInclude Include="Support\WinInclude.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

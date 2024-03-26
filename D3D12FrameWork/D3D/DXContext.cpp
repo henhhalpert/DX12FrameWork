@@ -67,6 +67,7 @@ void DXContext::SignalAndWait()
     if (SUCCEEDED(m_fence->SetEventOnCompletion(m_fenceValue, m_fenceEvent)))
     {
         // wait for event, max 20 secs
+        // WAIT_OBJECT_0 is used to indicate that the object you’re waiting for is ready (or “signaled”)
         if (WaitForSingleObject(m_fenceEvent, 2e4) != WAIT_OBJECT_0)
             std::exit(-1);
     }
@@ -100,6 +101,7 @@ void DXContext::ExecuteCommandList()
         UINT numCmdLists = 1;
         ID3D12CommandList* lists[] = { m_cmdList };
         m_cmdQueue->ExecuteCommandLists(numCmdLists, lists);
+        // Sync using fences and wait for single event to occur.
         SignalAndWait();
     }
 }

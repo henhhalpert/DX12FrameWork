@@ -2,6 +2,7 @@
 
 #include <Support/WinInclude.h>
 #include <Support/ComPointer.h>
+#include <Support/Window.h>
 
 #include <Debug/DXDebugLayer.h>
 
@@ -13,17 +14,18 @@ int main()
 	DXDebugLayer::Get().Init();
 
 	// Create Device 
-	if (DXContext::Get().Init())
+	if (DXContext::Get().Init() && DXWindow::Get().Init())
 	{
-		while (true)
+		while (!DXWindow::Get().ShouldClose())
 		{
-			auto* cmdList = DXContext::Get().InitCommandList();
+			DXWindow::Get().Update();
+			ID3D12GraphicsCommandList* cmdList = DXContext::Get().InitCommandList();
 			DXContext::Get().ExecuteCommandList();
 		}
 		DXContext::Get().ShutDown();
 	}
-
 	// Terminate debug layer 
+	DXWindow::Get().ShutDown();
 	DXDebugLayer::Get().ShutDown();
 	return 0;
 } 
