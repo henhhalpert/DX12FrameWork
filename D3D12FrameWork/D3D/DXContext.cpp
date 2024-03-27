@@ -2,6 +2,11 @@
 
 bool DXContext::Init()
 {
+    if (FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(&m_dxgiFactory))))
+    {
+        return false;
+    }
+
     if (FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&m_device))))
     {
         return false;
@@ -51,7 +56,9 @@ void DXContext::ShutDown()
     m_cmdAllocator.Release();
     if (m_fenceEvent)
         CloseHandle(m_fenceEvent);
+    m_fence.Release();
     m_cmdQueue.Release();
+    m_dxgiFactory.Release();
     m_device.Release();
 }
 
@@ -69,7 +76,10 @@ void DXContext::SignalAndWait()
         // wait for event, max 20 secs
         // WAIT_OBJECT_0 is used to indicate that the object you’re waiting for is ready (or “signaled”)
         if (WaitForSingleObject(m_fenceEvent, 2e4) != WAIT_OBJECT_0)
+        {
+            CloseHandle(m_fenceEvent);
             std::exit(-1);
+        }
     }
     else
     {

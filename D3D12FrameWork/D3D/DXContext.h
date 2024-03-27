@@ -8,6 +8,16 @@ class DXContext
 		bool Init();
 		void ShutDown();
 
+		// Signaling and waiting for the GPU to finish its work ensures that all GPU operations are completed
+		// before you proceed with shutting down the rendering process and releasing resources.
+		// This is why you typically flush the command queueand wait for all operations to complete before closing the window.
+		inline void Flush(size_t count)
+		{
+			for (size_t i = 0; i < count; ++i)
+			{
+				SignalAndWait();
+			}
+		}
 		void SignalAndWait();
 		ID3D12GraphicsCommandList* InitCommandList();
 		void ExecuteCommandList();
@@ -20,7 +30,13 @@ class DXContext
 		{
 			return m_cmdQueue;
 		}
+		inline ComPointer<IDXGIFactory7>& GetFactory()
+		{
+			return m_dxgiFactory;
+		}
+
 	private:
+		ComPointer<IDXGIFactory7> m_dxgiFactory;
 		ComPointer<ID3D12Device9>					m_device;
 		ComPointer<ID3D12CommandQueue>				m_cmdQueue;
 
