@@ -20,12 +20,21 @@ int main()
 		{
 			DXWindow::Get().Update();
 			ID3D12GraphicsCommandList* cmdList = DXContext::Get().InitCommandList();
+
+			// Drawing shit on screen 
+
 			DXContext::Get().ExecuteCommandList();
+			DXWindow::Get().Present();
 		}
+
+		// Flushing all buffers 
+		DXContext::Get().Flush(DXWindow::GetFrameCount());
+
+		DXWindow::Get().ShutDown();
 		DXContext::Get().ShutDown();
 	}
+
 	// Terminate debug layer 
-	DXWindow::Get().ShutDown();
 	DXDebugLayer::Get().ShutDown();
 	return 0;
 } 

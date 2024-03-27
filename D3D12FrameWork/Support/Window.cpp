@@ -46,29 +46,69 @@ bool DXWindow::Init()
         wcex.hInstance,
         nullptr);
 
-	return m_window != nullptr;
+    if (m_window == nullptr)
+    {
+        return false;
+    }
+    // descriptors for swap chain
+    DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
+    DXGI_SWAP_CHAIN_FULLSCREEN_DESC swapChainFScreenDesc{};
+    swapChainDesc.Width  = 1920;
+    swapChainDesc.Height = 1080;
+    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // unsigned normalized : 0 - 1 
+    swapChainDesc.Stereo = false;
+    swapChainDesc.SampleDesc.Count = 1; // 1 pixel per pixel 
+    swapChainDesc.SampleDesc.Quality = 0; // no multisampling anti-aliasing
+    swapChainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER | DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapChainDesc.BufferCount = GetFrameCount(); // back buffer, front buffer and  sometimes middle buffer;  When the front buffer is done displaying and is ready to be swapped, it will take the contents of the buffer (either back or middle) that has the most recently completed frame. This way, the most up-to-date frame is always displayed, which can help reduce lag and tearing.
+    swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
+    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+    swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    swapChainFScreenDesc.Windowed = true;
+    
+    // Create Swap Chain 
+    ComPointer<IDXGIFactory7>& factory = DXContext::Get().GetFactory();
+    ComPointer<IDXGISwapChain1> swapChain1;
+    factory->CreateSwapChainForHwnd(DXContext::Get().GetCommandQueue(), m_window, &swapChainDesc, &swapChainFScreenDesc, nullptr, &swapChain1);
+    if (!swapChain1.QueryInterface(m_swapChain))
+        return false;
+    
+    return true;
 }
 
 void DXWindow::Update()
 {
     MSG msg;
+    //! retrieve messages from the message queue.
+    //!retrieve (peek at) a message from the message queue associated with 
+    //! the thread that created the specified 
     while (PeekMessageW(&msg, m_window, 0, 0, PM_REMOVE))
     {
         TranslateMessage(&msg);
+        //send the message retrieved by functions like GetMessage or PeekMessageW to the appropriate window procedure 
         DispatchMessageW(&msg);
     }
 }
 
 void DXWindow::ShutDown()
 {
+    m_swapChain.Release();
     if (m_window)
     {
         DestroyWindow(m_window);
     }
-    if (m_wndClass != 0)
+    if (m_wndClass)
     {
         UnregisterClassW((LPCWSTR)m_wndClass, GetModuleHandleW(nullptr));
     }
+    
+}
+
+void DXWindow::Present()
+{
+    // 1st arg - num of frames to wait for sync; 2nd - swap chain flags 
+    m_swapChain->Present(1, 0);
 }
 
 LRESULT DXWindow::OnWindowMessage(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
