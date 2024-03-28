@@ -12,24 +12,37 @@ int main()
 {
 	// Init debug layer 
 	DXDebugLayer::Get().Init();
+	DXWindow& winInstance = DXWindow::Get();
 
 	// Create Device 
 	if (DXContext::Get().Init() && DXWindow::Get().Init())
 	{
 		while (!DXWindow::Get().ShouldClose())
 		{
+			// Process pending resource message
 			DXWindow::Get().Update();
+
+			// Handle Resizing 
+			if (DXWindow::Get().ShouldResize())
+			{
+				DXContext::Get().Flush(DXWindow::GetFrameCount());
+				winInstance.Resize();
+			}
+			// Begin Drawing
 			ID3D12GraphicsCommandList* cmdList = DXContext::Get().InitCommandList();
 
-			// Drawing shit on screen 
-
+			
+			//! ----
+			// Draw shit on screen 
+			//! ---- 
+			
+			// Finish Drawing and present 
 			DXContext::Get().ExecuteCommandList();
 			DXWindow::Get().Present();
 		}
 
-		// Flushing all buffers 
+		// Flush all GPU operations Upon Closure
 		DXContext::Get().Flush(DXWindow::GetFrameCount());
-
 		DXWindow::Get().ShutDown();
 		DXContext::Get().ShutDown();
 	}

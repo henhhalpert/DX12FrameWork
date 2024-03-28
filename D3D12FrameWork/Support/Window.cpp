@@ -73,7 +73,7 @@ bool DXWindow::Init()
     factory->CreateSwapChainForHwnd(DXContext::Get().GetCommandQueue(), m_window, &swapChainDesc, &swapChainFScreenDesc, nullptr, &swapChain1);
     if (!swapChain1.QueryInterface(m_swapChain))
         return false;
-    
+
     return true;
 }
 
@@ -111,18 +111,38 @@ void DXWindow::Present()
     m_swapChain->Present(1, 0);
 }
 
+void DXWindow::Resize()
+{
+    RECT clientRect;
+    
+    if (GetClientRect(m_window, &clientRect))
+    {
+        m_width = clientRect.right - clientRect.left;
+        m_height = clientRect.bottom - clientRect.top;
+
+        m_swapChain->ResizeBuffers(GetFrameCount(), m_width, m_height, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
+        m_shouldResize = false;
+    }
+}
+
 LRESULT DXWindow::OnWindowMessage(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
+    case WM_SIZE:
+        // Dynamically react to window resizing - edge cases - minimizing and maximizing screen - we do not want to resize in this case. 
+        // ie lParam should not be 0 or lParam = width
+        // WORD - lowest 16 bits
+        // docs: The LOWORD and HIWORD macros get the 16-bit width and height values from lParam respectively.
+        if (lParam && (LOWORD(lParam) != Get().m_width || HIWORD(lParam) != Get().m_height))
+        {
+            Get().m_shouldResize = true;
+        }
+        break;
     case WM_CLOSE:
         // Handle the close message
         Get().m_shouldClose = true;
         PostQuitMessage(2);
-        return 0;
-    case WM_SIZE:
-        // Handle resizing
-        // You may want to handle resizing here if you're using DirectX
         return 0;
     }
 

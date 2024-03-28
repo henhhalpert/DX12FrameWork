@@ -12,11 +12,18 @@ class DXWindow
 		void Update();
 		void ShutDown();
 		void Present();
+		void Resize();
 
 		inline bool ShouldClose() const
 		{
 			return m_shouldClose;
 		}
+
+		inline bool ShouldResize() const
+		{
+			return m_shouldResize;
+		}
+
 		static constexpr size_t GetFrameCount()
 		{
 			return 2;
@@ -36,6 +43,10 @@ class DXWindow
 		ATOM m_wndClass = 0;
 		HWND m_window = nullptr;
 		bool m_shouldClose = false;
+		bool m_shouldResize = false;
+
+		UINT m_width = 1920;
+		UINT m_height = 1080;
 
 		ComPointer<IDXGISwapChain4> m_swapChain;
 
