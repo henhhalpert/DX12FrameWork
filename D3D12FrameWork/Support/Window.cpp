@@ -125,10 +125,63 @@ void DXWindow::Resize()
     }
 }
 
+void DXWindow::SetFullScreen(bool enabled)
+{
+    // Update Win styles
+    DWORD style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+    DWORD exStyle = WS_EX_OVERLAPPEDWINDOW | WS_EX_APPWINDOW;
+    if (enabled)
+    {
+        // alter styles 
+        style = WS_POPUP | WS_VISIBLE;
+        exStyle = WS_EX_APPWINDOW;
+    }
+
+    // Apply new win style 
+    SetWindowLongW(m_window, GWL_STYLE, style);
+    SetWindowLongW(m_window, GWL_EXSTYLE, exStyle);
+
+    if (enabled)
+    {
+        HMONITOR monitor = MonitorFromWindow(m_window, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO monitorInfo{};
+        monitorInfo.cbSize = sizeof(monitorInfo);
+        if (GetMonitorInfoW(monitor, &monitorInfo))
+        {
+            // resize window to full screen
+            SetWindowPos(m_window, nullptr,
+                monitorInfo.rcMonitor.left,
+                monitorInfo.rcMonitor.top,
+                monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+                monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
+                //! z order(the order of overlapping windows on the screen) should not be modified. 
+                //! the last window created or brought to the front will have the highest Z order
+                SWP_NOZORDER 
+            );
+
+            // Adjust buffers accordingly
+            //Resize();
+        }
+    }
+
+    else
+    {
+        ShowWindow(m_window, SW_MAXIMIZE);
+    }
+
+    m_isFullScreen = enabled;
+}
+
 LRESULT DXWindow::OnWindowMessage(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
+        // FullScreen mode
+    case WM_KEYDOWN:
+        if (wParam == VK_F11)
+        {
+            Get().SetFullScreen(!Get().IsFullScreen());
+        }
     case WM_SIZE:
         // Dynamically react to window resizing - edge cases - minimizing and maximizing screen - we do not want to resize in this case. 
         // ie lParam should not be 0 or lParam = width

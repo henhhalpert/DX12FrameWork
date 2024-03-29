@@ -17,6 +17,7 @@ int main()
 	// Create Device 
 	if (DXContext::Get().Init() && DXWindow::Get().Init())
 	{
+		DXWindow::Get().SetFullScreen(true);
 		while (!DXWindow::Get().ShouldClose())
 		{
 			// Process pending resource message
