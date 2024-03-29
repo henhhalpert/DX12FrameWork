@@ -30,9 +30,10 @@ class DXWindow
 			return m_isFullScreen;
 		}
 
+		static constexpr size_t FrameCount = 2;
 		static constexpr size_t GetFrameCount()
 		{
-			return 2;
+			return FrameCount;
 		}
 
 	private:
@@ -45,6 +46,9 @@ class DXWindow
 			return instance;
 		}
 	private:
+		bool GetBuffers();
+		void ReleaseBuffers();
+
 		static LRESULT CALLBACK  OnWindowMessage(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam);
 		ATOM m_wndClass = 0;
 		HWND m_window = nullptr;
@@ -56,6 +60,7 @@ class DXWindow
 		bool m_isFullScreen = false;
 
 		ComPointer<IDXGISwapChain4> m_swapChain;
+		ComPointer<ID3D12Resource2> m_buffers[FrameCount];
 
 	public:
 		//! By disabling these, you prevent the possibility of creating copies of the singleton object,

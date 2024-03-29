@@ -74,6 +74,12 @@ bool DXWindow::Init()
     if (!swapChain1.QueryInterface(m_swapChain))
         return false;
 
+    // Get Buffers
+    if (!GetBuffers())
+    {
+        return false;
+    }
+
     return true;
 }
 
@@ -93,7 +99,13 @@ void DXWindow::Update()
 
 void DXWindow::ShutDown()
 {
+    // Release d3d12 buffers resources
+    ReleaseBuffers();
+
+    // Release swap chain 
     m_swapChain.Release();
+
+    // Destroy and unregister window and window class respectively
     if (m_window)
     {
         DestroyWindow(m_window);
@@ -113,6 +125,9 @@ void DXWindow::Present()
 
 void DXWindow::Resize()
 {
+    // treating "Swapchain cannot be resized unless all outstanding buffer references have been released" err
+    // ie releasing d3d12 bufers prior to resizing buffers
+    ReleaseBuffers();
     RECT clientRect;
     
     if (GetClientRect(m_window, &clientRect))
@@ -123,6 +138,9 @@ void DXWindow::Resize()
         m_swapChain->ResizeBuffers(GetFrameCount(), m_width, m_height, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
         m_shouldResize = false;
     }
+
+    // Get d3d12 buffers again after resizing 
+    GetBuffers();
 }
 
 void DXWindow::SetFullScreen(bool enabled)
@@ -170,6 +188,27 @@ void DXWindow::SetFullScreen(bool enabled)
     }
 
     m_isFullScreen = enabled;
+}
+
+bool DXWindow::GetBuffers()
+{
+    for (size_t i = 0; i < FrameCount; ++i)
+    {
+        if (FAILED(m_swapChain->GetBuffer(i, IID_PPV_ARGS(&m_buffers[i]))))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void DXWindow::ReleaseBuffers()
+{
+    for (size_t i = 0; i < FrameCount; ++i)
+    {
+        m_buffers[i].Release();
+    }
 }
 
 LRESULT DXWindow::OnWindowMessage(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)

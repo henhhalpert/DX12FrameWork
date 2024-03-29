@@ -47,7 +47,7 @@ int main()
 		DXWindow::Get().ShutDown();
 		DXContext::Get().ShutDown();
 	}
-
+	
 	// Terminate debug layer 
 	DXDebugLayer::Get().ShutDown();
 	return 0;
