@@ -15,6 +15,9 @@ class DXWindow
 		void Resize();
 		void SetFullScreen(bool enabled);
 
+		void BeginFrame	(ID3D12GraphicsCommandList6* cmdList);
+		void EndFrame	(ID3D12GraphicsCommandList6* cmdList);
+
 		inline bool ShouldClose() const
 		{
 			return m_shouldClose;
@@ -61,6 +64,7 @@ class DXWindow
 
 		ComPointer<IDXGISwapChain4> m_swapChain;
 		ComPointer<ID3D12Resource2> m_buffers[FrameCount];
+		size_t m_currentBufferIndex = 0;
 
 	public:
 		//! By disabling these, you prevent the possibility of creating copies of the singleton object,

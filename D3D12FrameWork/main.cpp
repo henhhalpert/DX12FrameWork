@@ -30,12 +30,12 @@ int main()
 				winInstance.Resize();
 			}
 			// Begin Drawing
-			ID3D12GraphicsCommandList* cmdList = DXContext::Get().InitCommandList();
+			ID3D12GraphicsCommandList6* cmdList = DXContext::Get().InitCommandList();
 
-			
-			//! ----
-			// Draw shit on screen 
-			//! ---- 
+			// Switch to 'Draw' state
+			DXWindow::Get().BeginFrame(cmdList);
+			// Switch to 'Present' state
+			DXWindow::Get().EndFrame(cmdList);
 			
 			// Finish Drawing and present 
 			DXContext::Get().ExecuteCommandList();

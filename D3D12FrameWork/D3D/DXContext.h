@@ -19,7 +19,7 @@ class DXContext
 			}
 		}
 		void SignalAndWait();
-		ID3D12GraphicsCommandList* InitCommandList();
+		ID3D12GraphicsCommandList6* InitCommandList();
 		void ExecuteCommandList();
 
 		inline ComPointer<ID3D12Device9>& GetDevice()
@@ -40,7 +40,7 @@ class DXContext
 		ComPointer<ID3D12Device9>					m_device;
 		ComPointer<ID3D12CommandQueue>				m_cmdQueue;
 
-		ComPointer<ID3D12GraphicsCommandList5>		m_cmdList;
+		ComPointer<ID3D12GraphicsCommandList6>		m_cmdList;
 		ComPointer<ID3D12CommandAllocator>			m_cmdAllocator;
 
 		ComPointer<ID3D12Fence1>		m_fence;
