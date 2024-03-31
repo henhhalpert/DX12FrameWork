@@ -66,6 +66,10 @@ class DXWindow
 		ComPointer<ID3D12Resource2> m_buffers[FrameCount];
 		size_t m_currentBufferIndex = 0;
 
+		// for the memory allocation of rendering target view descriptors (RTVs)
+		ComPointer<ID3D12DescriptorHeap> m_rtvDescHeap;
+		D3D12_CPU_DESCRIPTOR_HANDLE m_rtvHandles[FrameCount];
+
 	public:
 		//! By disabling these, you prevent the possibility of creating copies of the singleton object,
 		//! which could violate the singleton pattern by having multiple instances.

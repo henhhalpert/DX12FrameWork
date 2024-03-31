@@ -75,6 +75,31 @@ bool DXWindow::Init()
     if (!swapChain1.QueryInterface(m_swapChain))
         return false;
 
+    // Create Heap desc. for RTV
+    D3D12_DESCRIPTOR_HEAP_DESC descHeapDesc{};
+    //ZeroMemory(&descHeapDesc, sizeof(descHeapDesc));
+    descHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    descHeapDesc.NumDescriptors = FrameCount; // 2 buffers, 2 frames. One desc. for each frame
+    descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    descHeapDesc.NodeMask = 0; // single gpu support 
+    if (FAILED(DXContext::Get().GetDevice()->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&m_rtvDescHeap))))
+    {
+        return false;
+    }
+
+    // Create handles that reresent the location on the memory heap
+    D3D12_CPU_DESCRIPTOR_HANDLE firstHandle = m_rtvDescHeap->GetCPUDescriptorHandleForHeapStart();
+    UINT handleIncrement = DXContext::Get().GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+    for (size_t i = 0; i < FrameCount; ++i)
+    {
+        // initialize each handle to point to the beginning of the descriptor heap.
+        m_rtvHandles[i] = firstHandle;
+        // advancint the handle to point to the descriptor corresponding to the current frame, 
+        // by adding the offset calculated based on the handle increment size multiplied by the frame index.
+        m_rtvHandles[i].ptr += handleIncrement * i;
+    }
+
     // Get Buffers
     if (!GetBuffers())
     {
@@ -102,6 +127,9 @@ void DXWindow::ShutDown()
 {
     // Release d3d12 buffers resources
     ReleaseBuffers();
+
+    // release rtv desc. heap 
+    m_rtvDescHeap.Release();
 
     // Release swap chain 
     m_swapChain.Release();
@@ -207,6 +235,9 @@ void DXWindow::BeginFrame(ID3D12GraphicsCommandList6* cmdList)
     barr.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
     cmdList->ResourceBarrier(1, &barr);
 
+    float clearColor[] = { 0.8f, 0.5f, 0.5f, 0.5f };
+    cmdList->ClearRenderTargetView(m_rtvHandles[m_currentBufferIndex], clearColor, 0, nullptr );
+    cmdList->OMSetRenderTargets(1, &m_rtvHandles[m_currentBufferIndex] , false, nullptr);
 }
 
 void DXWindow::EndFrame(ID3D12GraphicsCommandList6* cmdList)
@@ -231,6 +262,17 @@ bool DXWindow::GetBuffers()
         {
             return false;
         }
+
+        // Create a desc on the heap 
+        D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+        rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+        rtvDesc.Texture2D.MipSlice = 0;
+        rtvDesc.Texture2D.PlaneSlice = 0;
+        
+        // Create a render target view (RTV) for a resource, such as a texture/buffer, in this case a buffer,
+        // & bind it to a descriptor in the descriptor heap.
+        DXContext::Get().GetDevice()->CreateRenderTargetView(m_buffers[i], &rtvDesc, m_rtvHandles[i]);
     }
 
     return true;
