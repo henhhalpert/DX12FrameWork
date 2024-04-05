@@ -6,7 +6,6 @@
 #include <Support/Shader.h>
 
 #include <Debug/DXDebugLayer.h>
-
 #include <D3D/DXContext.h>
 
 int main()
@@ -26,7 +25,7 @@ int main()
 		hpUpload.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 		hpUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
 		hpUpload.CreationNodeMask = 0; // multiple gpus no thx
-		hpUpload.VisibleNodeMask = 0; 
+		hpUpload.VisibleNodeMask = 0;
 
 		D3D12_HEAP_PROPERTIES hpDefault{};
 		hpDefault.Type = D3D12_HEAP_TYPE_DEFAULT; // upload data from cpu to gpu
@@ -38,7 +37,7 @@ int main()
 		// Vertex Data 
 		struct Vertex
 		{
-			float x, y; 
+			float x, y;
 		};
 		Vertex vertices[] =
 		{
@@ -48,7 +47,7 @@ int main()
 			{   1.f,  1.f}
 		};
 
-		D3D12_INPUT_ELEMENT_DESC vertexLayout[] = 
+		D3D12_INPUT_ELEMENT_DESC vertexLayout[] =
 		{
 			// 2D Position layout. 
 			// D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA -  once per vertex when processing vertices
@@ -68,9 +67,9 @@ int main()
 		rd.SampleDesc.Count = 1; // not using it --> set to 1 
 		rd.SampleDesc.Quality = 0;
 		rd.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR; // makes sense for a buffer
-		rd.Flags = D3D12_RESOURCE_FLAG_NONE; 
+		rd.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		ComPointer<ID3D12Resource2> uploadBuffer, vertexBuffer; 
+		ComPointer<ID3D12Resource2> uploadBuffer, vertexBuffer;
 		// created on cpu side for uploading to gpu
 		DXContext::Get().GetDevice()->CreateCommittedResource(&hpUpload, D3D12_HEAP_FLAG_NONE, &rd, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&uploadBuffer));
 		// create on gpu side 
@@ -94,20 +93,53 @@ int main()
 		DXContext::Get().ExecuteCommandList();
 
 		// === Shaders ===
+		Shader rootSignatureShader("RootSignature.cso");
 		Shader vertexShader("VertexShader.cso");
 		Shader pixelShader("PixelShader.cso");
 
+		// Create root signature
+		ComPointer<ID3D12RootSignature> rootSignature;
+		HRESULT hr = DXContext::Get().GetDevice()->CreateRootSignature(0, rootSignatureShader.GetBuffer(), rootSignatureShader.GetSize(), IID_PPV_ARGS(&rootSignature));
+
+		// Error creating root signature
+		if (FAILED(hr))
+			return -1;
+
 		// Pipeline State
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC gfxPsod{};
-		gfxPsod.InputLayout.NumElements			= _countof(vertexLayout);
-		gfxPsod.InputLayout.pInputElementDescs  = vertexLayout;
-		gfxPsod.IBStripCutValue					= D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
-		gfxPsod.VS.BytecodeLength				= vertexShader.GetSize();
-		gfxPsod.VS.pShaderBytecode				= vertexShader.GetBuffer();
-		// TODO: Rasterizer   
-		gfxPsod.PS.BytecodeLength				= pixelShader.GetSize();
-		gfxPsod.PS.pShaderBytecode				= pixelShader.GetBuffer();
-		// TODO: OutputMerger
+		gfxPsod.pRootSignature = rootSignature;
+		gfxPsod.InputLayout.NumElements = _countof(vertexLayout);
+		gfxPsod.InputLayout.pInputElementDescs = vertexLayout;
+		gfxPsod.IBStripCutValue    = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+		gfxPsod.VS.BytecodeLength  = vertexShader.GetSize();
+		gfxPsod.VS.pShaderBytecode = vertexShader.GetBuffer();
+		gfxPsod.PS.BytecodeLength  = pixelShader.GetSize();
+		gfxPsod.PS.pShaderBytecode = pixelShader.GetBuffer();
+		gfxPsod.DS.BytecodeLength  =  0;
+		gfxPsod.DS.pShaderBytecode =  nullptr;
+		gfxPsod.HS.BytecodeLength  =  0;
+		gfxPsod.HS.pShaderBytecode =  nullptr;
+		gfxPsod.GS.BytecodeLength  =  0;
+		gfxPsod.GS.pShaderBytecode =  nullptr;
+		gfxPsod.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID; // the interior should be filled with solid color.
+		gfxPsod.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+		gfxPsod.RasterizerState.FrontCounterClockwise = FALSE;
+		gfxPsod.RasterizerState.DepthBias = 0;
+		gfxPsod.RasterizerState.DepthBiasClamp = 0.f;
+		gfxPsod.RasterizerState.SlopeScaledDepthBias = 0.f;
+		gfxPsod.RasterizerState.DepthClipEnable = FALSE;
+		gfxPsod.RasterizerState.MultisampleEnable = FALSE;
+		gfxPsod.RasterizerState.AntialiasedLineEnable = FALSE;
+		gfxPsod.RasterizerState.ForcedSampleCount = 0;
+		gfxPsod.StreamOutput.NumEntries = 0;
+		gfxPsod.StreamOutput.NumStrides = 0;
+		gfxPsod.StreamOutput.pBufferStrides = nullptr;
+		gfxPsod.StreamOutput.pSODeclaration = nullptr;
+		gfxPsod.StreamOutput.RasterizedStream = 0;
+		gfxPsod.NodeMask = 0;
+		gfxPsod.CachedPSO.CachedBlobSizeInBytes = 0;
+		gfxPsod.CachedPSO.pCachedBlob = nullptr;
+		gfxPsod.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 		// Vertex Buffer View
 		D3D12_VERTEX_BUFFER_VIEW vbv{};
@@ -132,7 +164,7 @@ int main()
 
 			// Switch to 'Draw' state
 			DXWindow::Get().BeginFrame(cmdList);
-			
+
 			// Input Assembler 
 			cmdList->IASetVertexBuffers(0, 1, &vbv);
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -141,7 +173,7 @@ int main()
 			cmdList->DrawInstanced(_countof(vertices), 1, 0, 0);
 			// Switch to 'Present' state
 			DXWindow::Get().EndFrame(cmdList);
-			
+
 			// Finish Drawing and present 
 			DXContext::Get().ExecuteCommandList();
 			DXWindow::Get().Present();
