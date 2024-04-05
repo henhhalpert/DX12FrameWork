@@ -75,7 +75,7 @@ void DXContext::SignalAndWait()
     {
         // wait for event, max 20 secs
         // WAIT_OBJECT_0 is used to indicate that the object you’re waiting for is ready (or “signaled”)
-        if (WaitForSingleObject(m_fenceEvent, 2e4) != WAIT_OBJECT_0)
+        if (WaitForSingleObject(m_fenceEvent, DWORD(2e4)) != WAIT_OBJECT_0)
         {
             CloseHandle(m_fenceEvent);
             std::exit(-1);

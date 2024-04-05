@@ -256,7 +256,7 @@ void DXWindow::EndFrame(ID3D12GraphicsCommandList6* cmdList)
 
 bool DXWindow::GetBuffers()
 {
-    for (size_t i = 0; i < FrameCount; ++i)
+    for (UINT i = 0; i < FrameCount; ++i)
     {
         if (FAILED(m_swapChain->GetBuffer(i, IID_PPV_ARGS(&m_buffers[i]))))
         {

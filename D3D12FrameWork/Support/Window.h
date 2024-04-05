@@ -34,7 +34,7 @@ class DXWindow
 		}
 
 		static constexpr size_t FrameCount = 2;
-		static constexpr size_t GetFrameCount()
+		static constexpr UINT GetFrameCount()
 		{
 			return FrameCount;
 		}
