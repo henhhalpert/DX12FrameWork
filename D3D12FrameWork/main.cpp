@@ -121,6 +121,7 @@ int main()
 		gfxPsod.HS.pShaderBytecode =  nullptr;
 		gfxPsod.GS.BytecodeLength  =  0;
 		gfxPsod.GS.pShaderBytecode =  nullptr;
+		gfxPsod.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		gfxPsod.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID; // the interior should be filled with solid color.
 		gfxPsod.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 		gfxPsod.RasterizerState.FrontCounterClockwise = FALSE;
@@ -136,10 +137,56 @@ int main()
 		gfxPsod.StreamOutput.pBufferStrides = nullptr;
 		gfxPsod.StreamOutput.pSODeclaration = nullptr;
 		gfxPsod.StreamOutput.RasterizedStream = 0;
+		gfxPsod.NumRenderTargets = 1;
+		gfxPsod.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		gfxPsod.DSVFormat = DXGI_FORMAT_UNKNOWN;
+		gfxPsod.BlendState.AlphaToCoverageEnable  = FALSE;
+		gfxPsod.BlendState.IndependentBlendEnable = FALSE;
+		
+		gfxPsod.BlendState.RenderTarget[0].BlendEnable = FALSE;
+		gfxPsod.BlendState.RenderTarget[0].LogicOpEnable = FALSE;
+		// color components
+		gfxPsod.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+		gfxPsod.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;
+		gfxPsod.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		// alpha components 
+		gfxPsod.BlendState.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
+		gfxPsod.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+		gfxPsod.BlendState.RenderTarget[0].BlendOpAlpha= D3D12_BLEND_OP_ADD;
+
+		gfxPsod.BlendState.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
+		gfxPsod.BlendState.RenderTarget[0].RenderTargetWriteMask= D3D12_COLOR_WRITE_ENABLE_ALL;
+
+		gfxPsod.DepthStencilState.DepthEnable = FALSE;
+		gfxPsod.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		gfxPsod.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+
+
+		gfxPsod.DepthStencilState.StencilEnable = FALSE;
+		gfxPsod.DepthStencilState.StencilReadMask = 0;
+		gfxPsod.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+
+		gfxPsod.DepthStencilState.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		gfxPsod.DepthStencilState.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+		gfxPsod.DepthStencilState.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+		gfxPsod.DepthStencilState.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+		gfxPsod.DepthStencilState.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		gfxPsod.DepthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+		gfxPsod.DepthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+		gfxPsod.DepthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+
+		gfxPsod.SampleMask = 0xFFFFFFFF;
+		gfxPsod.SampleDesc.Count = 1;
+		gfxPsod.SampleDesc.Quality = 0;
+
 		gfxPsod.NodeMask = 0;
 		gfxPsod.CachedPSO.CachedBlobSizeInBytes = 0;
 		gfxPsod.CachedPSO.pCachedBlob = nullptr;
 		gfxPsod.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+
+
+		ComPointer<ID3D12PipelineState> pso;
+		DXContext::Get().GetDevice()->CreateGraphicsPipelineState(&gfxPsod, IID_PPV_ARGS(&pso));
 
 		// Vertex Buffer View
 		D3D12_VERTEX_BUFFER_VIEW vbv{};
@@ -165,7 +212,10 @@ int main()
 			// Switch to 'Draw' state
 			DXWindow::Get().BeginFrame(cmdList);
 
-			// Input Assembler 
+			// == PSO ==
+			cmdList->SetPipelineState(pso);
+			cmdList->SetGraphicsRootSignature(rootSignature);
+			// == IA ==
 			cmdList->IASetVertexBuffers(0, 1, &vbv);
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
