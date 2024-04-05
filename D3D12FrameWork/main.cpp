@@ -42,9 +42,9 @@ int main()
 		Vertex vertices[] =
 		{
 			// Triangle #1 
-			{  -1.f, -1.f},
-			{   0.f,  1.f},
-			{   1.f,  1.f}
+			{   -1.f, -1.f },
+			{   0.f,   1.f },
+			{   1.f,  -1.f }
 		};
 
 		D3D12_INPUT_ELEMENT_DESC vertexLayout[] =
@@ -153,7 +153,6 @@ int main()
 		gfxPsod.BlendState.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
 		gfxPsod.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 		gfxPsod.BlendState.RenderTarget[0].BlendOpAlpha= D3D12_BLEND_OP_ADD;
-
 		gfxPsod.BlendState.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
 		gfxPsod.BlendState.RenderTarget[0].RenderTargetWriteMask= D3D12_COLOR_WRITE_ENABLE_ALL;
 
@@ -218,6 +217,22 @@ int main()
 			// == IA ==
 			cmdList->IASetVertexBuffers(0, 1, &vbv);
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			// == RS  ==
+			D3D12_VIEWPORT vp{};
+			vp.TopLeftX = 0.f;
+			vp.TopLeftY = 0.f;
+			vp.Width    = (float)DXWindow::Get().GetWidth();
+			vp.Height   = (float)DXWindow::Get().GetHeight();
+			vp.MinDepth = 1.f;
+			vp.MaxDepth = 0.f;
+			cmdList->RSSetViewports(1, &vp);
+
+			RECT scRect;
+			scRect.left = scRect.top = 0;
+			scRect.right = DXWindow::Get().GetWidth();
+			scRect.bottom = DXWindow::Get().GetHeight();
+			cmdList->RSSetScissorRects(1, &scRect);
 
 			// Draw 
 			cmdList->DrawInstanced(_countof(vertices), 1, 0, 0);
