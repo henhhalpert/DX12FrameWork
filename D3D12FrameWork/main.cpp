@@ -8,6 +8,23 @@
 #include <Debug/DXDebugLayer.h>
 #include <D3D/DXContext.h>
 
+void colorPuke(float* color)
+{
+	static int pukeState = 0;
+	color[pukeState] += 0.01f;
+	if (color[pukeState] > 1.0f)
+	{
+		pukeState++;
+		if (pukeState == 3)
+		{
+			color[0] = 0.0f;
+			color[1] = 0.0f;
+			color[2] = 0.0f;
+			pukeState = 0;
+		}
+	}
+}
+
 int main()
 {
 	// Init debug layer 
@@ -18,17 +35,16 @@ int main()
 	if (DXContext::Get().Init() && DXWindow::Get().Init())
 	{
 
-		// Putting data on gpu 
-
+		// Heap properties for our Buffer Resource - D3D12_RESOURCE_DIMENSION_BUFFER - CPU SIDE
 		D3D12_HEAP_PROPERTIES hpUpload{};
-		hpUpload.Type = D3D12_HEAP_TYPE_UPLOAD; // upload data from cpu to gpu
+		hpUpload.Type = D3D12_HEAP_TYPE_UPLOAD; // cpu side 
 		hpUpload.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 		hpUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
 		hpUpload.CreationNodeMask = 0; // multiple gpus no thx
 		hpUpload.VisibleNodeMask = 0;
-
+		// GPU SIDE
 		D3D12_HEAP_PROPERTIES hpDefault{};
-		hpDefault.Type = D3D12_HEAP_TYPE_DEFAULT; // upload data from cpu to gpu
+		hpDefault.Type = D3D12_HEAP_TYPE_DEFAULT; // gpu side
 		hpDefault.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 		hpDefault.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
 		hpDefault.CreationNodeMask = 0; // multiple gpus no thx
@@ -83,7 +99,7 @@ int main()
 
 		// populate uploadBufferAddress for the CPU to use this address to access the mapped memory region.
 		uploadBuffer->Map(0, &uploadRange, &uploadBufferAddress);
-		// populate allocated memory with hello as an example, will be deleted later. 
+		// populate allocated memory
 		memcpy(uploadBufferAddress, vertices, sizeof(vertices));
 		uploadBuffer->Unmap(0, &uploadRange);
 
@@ -219,6 +235,9 @@ int main()
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			// == RS  ==
+			
+			//! Map normalized device coordinates(NDC), which range from -1 to 1 on each axis, to the actual screen coordinates. 
+			//! ensures that rendered scene is displayed correctly to the user. 
 			D3D12_VIEWPORT vp{};
 			vp.TopLeftX = 0.f;
 			vp.TopLeftY = 0.f;
@@ -228,11 +247,18 @@ int main()
 			vp.MaxDepth = 0.f;
 			cmdList->RSSetViewports(1, &vp);
 
+			//! A scissor rectangle is a region of the render target (typically the screen) 
+			//! where rendering is allowed to occur. Any pixels outside this rectangle are clipped and not drawn.
 			RECT scRect;
 			scRect.left = scRect.top = 0;
 			scRect.right = DXWindow::Get().GetWidth();
 			scRect.bottom = DXWindow::Get().GetHeight();
 			cmdList->RSSetScissorRects(1, &scRect);
+
+			// ROOT 
+			static float color[] = { 0.0f, 0.0f, 0.0f };
+			colorPuke(color);
+			cmdList->SetGraphicsRoot32BitConstants(0, 3, color, 0);
 
 			// Draw 
 			cmdList->DrawInstanced(_countof(vertices), 1, 0, 0);

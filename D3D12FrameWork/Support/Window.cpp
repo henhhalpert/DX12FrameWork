@@ -87,7 +87,7 @@ bool DXWindow::Init()
         return false;
     }
 
-    // Create handles that reresent the location on the memory heap
+    // Create handles that represent the location on the memory heap
     D3D12_CPU_DESCRIPTOR_HANDLE firstHandle = m_rtvDescHeap->GetCPUDescriptorHandleForHeapStart();
     UINT handleIncrement = DXContext::Get().GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
@@ -95,7 +95,7 @@ bool DXWindow::Init()
     {
         // initialize each handle to point to the beginning of the descriptor heap.
         m_rtvHandles[i] = firstHandle;
-        // advancint the handle to point to the descriptor corresponding to the current frame, 
+        // advancing the handle to point to the descriptor corresponding to the current frame, 
         // by adding the offset calculated based on the handle increment size multiplied by the frame index.
         m_rtvHandles[i].ptr += handleIncrement * i;
     }
