@@ -2,6 +2,7 @@
 
 #include <Support/WinInclude.h>
 #include <Support/ComPointer.h>
+#include <Support/ImageLoader.h>
 #include <Support/Window.h>
 #include <Support/Shader.h>
 
@@ -102,6 +103,10 @@ int main()
 		// populate allocated memory
 		memcpy(uploadBufferAddress, vertices, sizeof(vertices));
 		uploadBuffer->Unmap(0, &uploadRange);
+
+		// texture
+		ImageLoader::ImageData textureData;
+		ImageLoader::LoadImageFromDisk("./auge_512_512_BGRA_32BPP.png", textureData);
 
 		// copy Cpu resource onto GPU resource (uploadBuffer --> vertexBuffer)
 		ID3D12GraphicsCommandList6* preCmdList = DXContext::Get().InitCommandList();
