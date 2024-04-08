@@ -41,7 +41,7 @@ bool ImageLoader::LoadImageFromDisk(const std::filesystem::path& imgPath, ImageD
 	// DXGI pixel format - using lookup table
 	// search for an element in s_lookupTable
 	auto findIt = std::find_if(s_lookupTable.begin(), s_lookupTable.end(),
-		[&](const GUID_to_dxgi& entry)
+		[&](const GUID_to_dxgi& entry) // all data within lambda accessed by ref for the purpose of finding a valid entry. 
 		{
 			return memcmp(&entry.wic, &data.winPixelFormat, sizeof(GUID)) == 0;
 		}

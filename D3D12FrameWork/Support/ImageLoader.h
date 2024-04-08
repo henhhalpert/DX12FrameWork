@@ -8,9 +8,9 @@
 #include <filesystem>
 #include <fstream>
 
-#define __ImageLoader__CAR(expr) \
-do \
-{ \
+#define __ImageLoader__CAR(expr)	 \
+do									 \
+{									 \
 	if(FAILED(expr)) {return false;} \
 } while(false)
 
@@ -26,8 +26,10 @@ class ImageLoader
 			uint_fast32_t bpp; // bits per pixel - how many a single pixel has 
 			uint_fast32_t cc;  // channel count - how many channel are
 
-			GUID		winPixelFormat;
-			DXGI_FORMAT giPixelFormat;
+			//! unique signature that can be mapped to actual pixel format
+			//! (using GUID_to_dxgi struct below for conversion)
+			GUID		winPixelFormat; 
+			DXGI_FORMAT giPixelFormat;  
 
 		};
 
