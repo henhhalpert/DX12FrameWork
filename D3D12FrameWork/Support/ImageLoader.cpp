@@ -59,6 +59,7 @@ bool ImageLoader::LoadImageFromDisk(const std::filesystem::path& imgPath, ImageD
 	uint_fast32_t bufSize = stride * data.height;				  // total number of bytes per image 
 	data.data.resize(bufSize);
 	WICRect copyRect;
+	copyRect.X = copyRect.Y = 0;
 	copyRect.Height = data.height;
 	copyRect.Width = data.width;
 

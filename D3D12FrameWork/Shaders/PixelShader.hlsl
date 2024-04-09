@@ -5,8 +5,14 @@ Texture2D<float4> textures[] : register(t0);
 sampler textureSampler : register(s0);
 
 [RootSignature(ROOTSIG)] // bind root sig. 
-float4 main() : SV_TARGET
+void main(
+        // Input
+        in float2 uv : Texcoord,
+
+        //Output
+        out float4 pixel : SV_Target
+) : SV_TARGET
 {
-    float4 texel = textures[0].Sample(textureSampler, float2(0.5f, 0.5f));
-	return float4(texel.rgb, 1.0f);
+    float4 texel = textures[0].Sample(textureSampler, uv);
+	pixel = float4(texel.rgb, 1.0f);
 }

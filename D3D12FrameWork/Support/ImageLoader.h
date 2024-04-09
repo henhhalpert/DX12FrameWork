@@ -21,10 +21,10 @@ class ImageLoader
 		{
 			// metadata 
 			std::vector<char> data;
-			uint_fast32_t width;
-			uint_fast32_t height;
-			uint_fast32_t bpp; // bits per pixel - how many a single pixel has 
-			uint_fast32_t cc;  // channel count - how many channel are
+			uint32_t  width;
+			uint32_t  height;
+			uint32_t  bpp; // bits per pixel - how many a single pixel has 
+			uint32_t  cc;  // channel count - how many channel are
 
 			//! unique signature that can be mapped to actual pixel format
 			//! (using GUID_to_dxgi struct below for conversion)

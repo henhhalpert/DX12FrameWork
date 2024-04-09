@@ -77,7 +77,6 @@ bool DXWindow::Init()
 
     // Create Heap desc. for RTV
     D3D12_DESCRIPTOR_HEAP_DESC descHeapDesc{};
-    //ZeroMemory(&descHeapDesc, sizeof(descHeapDesc));
     descHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     descHeapDesc.NumDescriptors = FrameCount; // 2 buffers, 2 frames. One desc. for each frame
     descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;

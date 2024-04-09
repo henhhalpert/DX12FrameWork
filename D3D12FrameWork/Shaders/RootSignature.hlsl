@@ -1,7 +1,7 @@
 /*
 **      Root Signature Layout (CPU) 
 *       - 0: float3 "Color"
-*       -1 : descriptor table for "Textures"
+*       - 1 : descriptor table for "Textures"
 *
 *
 *       Root Signature Layout (GPU)
