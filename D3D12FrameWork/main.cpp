@@ -75,8 +75,8 @@ int main()
 		// Texture data
 		ImageLoader::ImageData textureData;
 		ImageLoader::LoadImageFromDisk("./auge_512_512_BGRA_32BPP.png", textureData);
-		uint32_t textureStride = textureData.width * ((textureData.bpp + 7) / 8);
-		uint32_t textureSize = textureData.height * textureStride;
+		size_t textureStride = textureData.width * (size_t)((textureData.bpp + 7) / 8);
+		size_t textureSize = textureData.height * textureStride;
 
 		// upload buffer desc - no need in height and depth since its just a buffer 
 		D3D12_RESOURCE_DESC rdv{};
